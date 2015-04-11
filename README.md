@@ -2,7 +2,8 @@
 
 Example to generate aggregates from Cassandra tables and store it into other Cassandra tables.
 
-##1 Create the keyspace and tables with CQL scripts found in events.cql in DevCenter or cqlsh
+##1 Data Model
+Create the keyspace and tables with CQL scripts found in events.cql in DevCenter or cqlsh
 
 ##2 Create the jar package
 ```
