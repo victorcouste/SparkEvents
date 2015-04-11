@@ -2,6 +2,7 @@
 import org.apache.spark.SparkContext._
 import com.datastax.spark.connector._
 import com.datastax.spark.connector.cql.CassandraConnector
+import org.apache.spark.api.java
 import org.apache.spark.sql.cassandra.CassandraSQLContext
 import org.apache.spark.{SparkContext, SparkConf}
 import org.joda.time.DateTime
@@ -16,35 +17,60 @@ object EventsAggregations  {
     val sparkConf = new SparkConf(true)
       .set("spark.cassandra.connection.host", "127.0.0.1")
       .setMaster("local")
-      .setAppName("spark-events")
+      .setAppName("spark-events-aggregations")
 
     val sc = new SparkContext(sparkConf)
-    val sqlc = new CassandraSQLContext(sc)
+    //val sqlc = new CassandraSQLContext(sc)
 
+    val keyspace = "ks_events"
 
-    //  --------- GROUP BY WITH SPARK ------------------------------------
+    //  --------- GROUP BY EVT_ID, EVT_EVH and EVT_GTS WITH SPARK ------------------------------------
 
-    sc.cassandraTable("ks_events", "events").select("evt_id","evt_veh","evt_gts")
-      .map( r => (r.get[String]("evt_id"),1))
+    val allevents = sc.cassandraTable(keyspace, "events").select("evt_id","evt_veh","evt_gts")
+
+    // ------ EVT ID ------------------------------------------
+
+    allevents.map( r => (r.get[String]("evt_id"),1))
       .reduceByKey(_ + _)
       //.foreach(println)
-      .saveToCassandra("ks_events", "events_byevtid", SomeColumns("evt_id","nb_evts"))
+      .saveToCassandra(keyspace, "events_byevtid", SomeColumns("evt_id","nb_evts"))
+
+    // ------ EVT VEH ------------------------------------------
+
+    allevents.map( r => (r.get[String]("evt_veh"),1))
+      .reduceByKey(_ + _)
+      //.foreach(println)
+      .saveToCassandra(keyspace, "events_byevtveh", SomeColumns("evt_veh","nb_evts"))
+
+    // ------ EVT ID+GTS DAY ------------------------------------------
+
+    // ------ EVT VEH+GTS DAY ------------------------------------------
+
+    // ------ EVT GTS DAY ------------------------------------------
+
+    //r.get[DateTime]("evt_gts").year(),
+
+    //allevents.map( r => (r.get[DateTime]("evt_gts").dayOfMonth().roundFloorCopy(),1))
+      //.reduceByKey(_ + _)
+      //.foreach(println)
+     // .saveToCassandra(keyspace, "events_byday", SomeColumns("evt_year_gts","evt_day_gts","nb_evts"))
 
     //  --------- GROUP BY WITH SQL ------------------------------------
-
-    //sqlc.sql("select evt_id, count(*) from ks_events.events group by evt_id")
+    /*
+    sqlc.sql("select evt_id, count(*) from ks_events.events group by evt_id")
     //.toArray.foreach(println)
     //case class CountEvtID(evtid: String, count: Int)
-    // .map( p => CountEvtID(p(0),p(1)))
+     .map( p => CountEvtID(p(0),p(1)))
     // OR  val .map( p => (p(0),p(1)))
-    //.saveToCassandra("ks_events", "events_byevtid", SomeColumns("evt_id","nb_evts"))
+    .saveToCassandra("ks_events", "events_byevtid", SomeColumns("evt_id","nb_evts"))
 
     sqlc.sql("select evt_veh, count(*) from ks_events.events group by evt_veh")
       .map( p => (p(0),p(1)))
       .saveToCassandra("ks_events", "events_byevtveh", SomeColumns("evt_veh","nb_evts"))
+    */
 
 
-    //println("count: " + eventsbyevtid.count)
+    println("Nb events aggregated: " + allevents.count)
     //println("first: " + eventsbyevtveh.first)
 
     sc.stop()
