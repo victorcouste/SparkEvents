@@ -4,14 +4,49 @@ CREATE KEYSPACE IF NOT EXISTS ks_events WITH replication = {'class': 'SimpleStra
 use ks_events;
 
 CREATE TABLE IF NOT EXISTS ks_events.events (
-  evt_uid uuid PRIMARY KEY,
+  evt_uid uuid,
   evt_id text,
   evt_value int,
   evt_spd int,
   evt_veh text,
-  evt_gts timestamp
+  evt_gts timestamp,
+  PRIMARY KEY(evt_uid)
 );
 
+CREATE TABLE IF NOT EXISTS ks_events.events_byday (
+  evt_year_gts int,
+  evt_day_gts text,
+  nb_evts int,
+  PRIMARY KEY(evt_year_gts,evt_day_gts)
+);
+
+CREATE TABLE IF NOT EXISTS ks_events.events_byevtid (
+  evt_id text,
+  nb_evts int,
+  PRIMARY KEY(evt_id)
+);
+
+CREATE TABLE IF NOT EXISTS ks_events.events_byevtveh (
+  evt_veh text,
+  nb_evts int,
+  PRIMARY KEY(evt_veh)
+);
+
+CREATE TABLE IF NOT EXISTS ks_events.events_bydayevtid (
+  evt_id text,
+  nb_evts_byevtid int static,
+  evt_day_gts text,
+  nb_evts int,
+  PRIMARY KEY(evt_id,evt_day_gts)
+);
+
+CREATE TABLE IF NOT EXISTS ks_events.events_bydayevtveh (
+  evt_veh text,
+  nb_evts_byevtveh int static,
+  evt_day_gts text,
+  nb_evts int,
+  PRIMARY KEY(evt_veh,evt_day_gts)
+);
 
 INSERT INTO events (evt_uid,evt_id,evt_value,evt_spd,evt_veh,evt_gts)
 VALUES (06049cbb-dfed-421f-b889-5f649a0de1ed,'A',23,78,'AZE','2013-05-02 10:30:29');
@@ -25,4 +60,10 @@ INSERT INTO events (evt_uid,evt_id,evt_value,evt_spd,evt_veh,evt_gts)
 VALUES (b3a76c6b-7c7f-4af6-964f-803a9283c401,'B',33,98,'OIP','2013-05-04 11:30:12');
 
 
+//truncate events_byevtid;
+//truncate events_byevtveh;
+
 select * from events;
+select * from events_byday;
+select * from events_byevtveh;
+select * from events_byevtid;
