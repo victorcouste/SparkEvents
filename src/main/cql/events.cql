@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS events_byevtveh (
 CREATE TABLE IF NOT EXISTS events_bydayevtid (
   evt_id text,
   nb_evts_byevtid int static,
-  evt_day_gts text,
+  evt_day_gts timestamp,
   nb_evts int,
   PRIMARY KEY(evt_id,evt_day_gts)
 );
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS events_bydayevtid (
 CREATE TABLE IF NOT EXISTS events_bydayevtveh (
   evt_veh text,
   nb_evts_byevtveh int static,
-  evt_day_gts text,
+  evt_day_gts timestamp,
   nb_evts int,
   PRIMARY KEY(evt_veh,evt_day_gts)
 );
