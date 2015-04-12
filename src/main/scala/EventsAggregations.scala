@@ -44,16 +44,29 @@ object EventsAggregations  {
 
     // ------ EVT ID+GTS DAY ------------------------------------------
 
+    allevents.map( r => ((r.get[String]("evt_id"),r.get[DateTime]("evt_gts").dayOfMonth().roundFloorCopy()),1))
+      .reduceByKey(_ + _)
+      .map( r => (r._1._1,r._1._2,r._2))
+      //.foreach(println)
+      .saveToCassandra(keyspace, "events_bydayevtid", SomeColumns("evt_id","evt_day_gts","nb_evts"))
+
     // ------ EVT VEH+GTS DAY ------------------------------------------
+
+    allevents.map( r => ((r.get[String]("evt_veh"),r.get[DateTime]("evt_gts").dayOfMonth().roundFloorCopy()),1))
+      .reduceByKey(_ + _)
+      .map( r => (r._1._1,r._1._2,r._2))
+      //.foreach(println)
+      .saveToCassandra(keyspace, "events_bydayevtveh", SomeColumns("evt_veh","evt_day_gts","nb_evts"))
 
     // ------ EVT GTS DAY ------------------------------------------
 
-    //r.get[DateTime]("evt_gts").year(),
+    //case class MyYearDay(evt_year_gts: String, evt_day_gts: DateTime, nb_evts: Int)
 
-    //allevents.map( r => (r.get[DateTime]("evt_gts").dayOfMonth().roundFloorCopy(),1))
-      //.reduceByKey(_ + _)
+    allevents.map( r => ((r.get[DateTime]("evt_gts").year().getAsText(),r.get[DateTime]("evt_gts").dayOfMonth().roundFloorCopy()),1))
+      .reduceByKey(_ + _)
+      .map( r => (r._1._1,r._1._2,r._2))
       //.foreach(println)
-     // .saveToCassandra(keyspace, "events_byday", SomeColumns("evt_year_gts","evt_day_gts","nb_evts"))
+    .saveToCassandra(keyspace, "events_byday", SomeColumns("evt_year_gts","evt_day_gts","nb_evts"))
 
     //  --------- GROUP BY WITH SQL ------------------------------------
     /*
